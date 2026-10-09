@@ -60,7 +60,7 @@ object SubscriptionUpdater {
             .setWhen(0)
             .setTicker(applicationContext.getString(R.string.forward_success))
             .setContentTitle(applicationContext.getString(R.string.subscription_update))
-            .setSmallIcon(R.drawable.ic_byteflow_notification)
+            .setSmallIcon(R.drawable.ic_byteflow_notification_m)
             .setLargeIcon(AppCompatResources.getDrawable(applicationContext, R.drawable.ic_byteflow_brand)!!.toBitmap(128, 128))
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
 

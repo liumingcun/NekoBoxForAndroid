@@ -120,7 +120,7 @@ class ServiceNotification(
         .setContentTitle(title)
         .setOnlyAlertOnce(true)
         .setContentIntent(SagerNet.configureIntent(service))
-        .setSmallIcon(R.drawable.ic_byteflow_notification)
+        .setSmallIcon(R.drawable.ic_byteflow_notification_m)
         .setLargeIcon(AppCompatResources.getDrawable(service as Context, R.drawable.ic_byteflow_brand)!!.toBitmap(128, 128))
         .setCategory(NotificationCompat.CATEGORY_SERVICE)
         .setPriority(if (visible) NotificationCompat.PRIORITY_LOW else NotificationCompat.PRIORITY_MIN)

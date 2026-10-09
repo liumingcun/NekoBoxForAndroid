@@ -85,3 +85,15 @@
 - Replace the enclosing group card with a transparent container. Each server has its own rounded card, border and vertical spacing; selected servers use a blue border and tinted surface. Group collapse and node actions retain their existing behavior.
 - Keep the notification M alpha-mask small icon, add a black-and-white M large icon to service, subscription and test notifications, and replace the Quick Settings tile icon and all legacy density-specific launcher PNGs with M assets. The system controls how notification icons are displayed.
 - Resource XML, PNG sizes and whitespace were checked. No APK build was started for these changes.
+
+### Notification icon compatibility follow-up
+
+- Notification builders and the Quick Settings tile now use a dedicated density-specific white M PNG resource instead of the vector resource. Five sizes preserve the transparent alpha mask required by small notification icons.
+- VPN and proxy services explicitly declare the ByteFlow brand icon, rather than relying on application-level inheritance.
+- The reported left-side icon has not been identified from a device screenshot; these are compatibility changes, not a verified diagnosis of the vendor notification layout. No build or device test was performed.
+
+### Screenshot-confirmed left-side notification branding
+
+- The supplied device screenshot shows an old cat application icon on the left and the new M large icon on the right. Adding the large icon alone did not fix the reported area.
+- Introduce a distinct `ic_byteflow_app` resource at all launcher densities and adaptive icon API levels. Application, round icon, launcher activity, VPN service and proxy service now explicitly reference this M resource. This changes the application-icon resource identity; device-side icon caching remains an unverified explanation for the old icon.
+- Existing small-notification M mask compatibility changes remain in place. Manifest, XML and bitmap consistency were checked; no build or device verification was performed.

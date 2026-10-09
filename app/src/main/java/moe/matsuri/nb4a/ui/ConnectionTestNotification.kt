@@ -19,7 +19,7 @@ class ConnectionTestNotification(val context: Context, val title: String) {
                 return
             }
             val builder = NotificationCompat.Builder(context, channelId)
-                .setSmallIcon(R.drawable.ic_byteflow_notification)
+                .setSmallIcon(R.drawable.ic_byteflow_notification_m)
                 .setLargeIcon(AppCompatResources.getDrawable(context, R.drawable.ic_byteflow_brand)!!.toBitmap(128, 128))
                 .setContentTitle(title)
                 .setOnlyAlertOnce(true)
