@@ -187,6 +187,14 @@ class ConfigurationFragment @JvmOverloads constructor(
             isGone = select
             if (!select) {
                 changeState(DataStore.serviceState)
+                val testCurrentConnection = View.OnClickListener {
+                    val host = activity as? MainActivity
+                    if (host != null && DataStore.serviceState.connected) {
+                        testConnection(host)
+                    } else snackbar(R.string.nb_connect_before_test).show()
+                }
+                findViewById<View>(R.id.status).setOnClickListener(testCurrentConnection)
+                findViewById<View>(R.id.connection_hint).setOnClickListener(testCurrentConnection)
                 findViewById<androidx.appcompat.widget.SwitchCompat>(R.id.connection_switch)
                     .setOnClickListener {
                         (activity as? MainActivity)?.toggleConnection()
