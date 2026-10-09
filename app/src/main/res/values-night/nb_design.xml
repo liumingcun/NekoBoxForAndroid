@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="nb_background">#000000</color>
+    <color name="nb_surface">#1C1C1E</color>
+    <color name="nb_text">#F2F2F7</color>
+    <color name="nb_secondary">#AEAEB2</color>
+    <color name="nb_accent">#409CFF</color>
+    <color name="nb_connected">#30D158</color>
+    <color name="nb_separator">#38383A</color>
+    <style name="Theme.SagerNet.Cupertino" parent="Theme.SagerNet">
+        <item name="colorPrimary">@color/nb_accent</item>
+        <item name="colorPrimaryDark">@color/nb_background</item>
+        <item name="colorAccent">@color/nb_accent</item>
+        <item name="colorSurface">@color/nb_surface</item>
+        <item name="colorOnSurface">@color/nb_text</item>
+        <item name="android:colorBackground">@color/nb_background</item>
+        <item name="android:windowBackground">@color/nb_background</item>
+        <item name="android:statusBarColor">@color/nb_background</item>
+        <item name="android:navigationBarColor">@color/nb_surface</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="actionBarTheme">@style/ThemeOverlay.AppCompat.DayNight</item>
+        <item name="tabTextColor">@color/nb_secondary</item>
+        <item name="tabSelectedTextColor">@color/nb_accent</item>
+        <item name="tabIndicatorColor">@color/nb_accent</item>
+        <item name="whiteOrTextPrimary">@color/nb_text</item>
+    </style>
+</resources>

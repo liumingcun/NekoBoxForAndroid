@@ -30,8 +30,9 @@ object Theme {
     const val GREY = 19
     const val BLUE_GREY = 20
     const val BLACK = 21
+    const val CUPERTINO = 22
 
-    private fun defaultTheme() = PINK_SSR
+    private fun defaultTheme() = CUPERTINO
 
     fun apply(context: Context) {
         context.setTheme(getTheme())
@@ -51,6 +52,7 @@ object Theme {
 
     fun getTheme(theme: Int): Int {
         return when (theme) {
+            0, CUPERTINO -> R.style.Theme_SagerNet_Cupertino
             RED -> R.style.Theme_SagerNet_Red
             PINK -> R.style.Theme_SagerNet
             PINK_SSR -> R.style.Theme_SagerNet_Pink_SSR
@@ -78,6 +80,7 @@ object Theme {
 
     fun getDialogTheme(theme: Int): Int {
         return when (theme) {
+            0, CUPERTINO -> R.style.Theme_SagerNet_Dialog_Cupertino
             RED -> R.style.Theme_SagerNet_Dialog_Red
             PINK -> R.style.Theme_SagerNet_Dialog
             PINK_SSR -> R.style.Theme_SagerNet_Dialog_Pink_SSR

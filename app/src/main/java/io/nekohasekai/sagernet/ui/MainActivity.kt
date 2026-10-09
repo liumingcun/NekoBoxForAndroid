@@ -14,6 +14,7 @@ import androidx.activity.addCallback
 import androidx.annotation.IdRes
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
 import androidx.preference.PreferenceDataStore
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
@@ -26,6 +27,7 @@ import io.nekohasekai.sagernet.SagerNet
 import io.nekohasekai.sagernet.aidl.ISagerNetService
 import io.nekohasekai.sagernet.aidl.SpeedDisplayData
 import io.nekohasekai.sagernet.aidl.TrafficData
+import io.nekohasekai.sagernet.widget.StatsBar
 import io.nekohasekai.sagernet.bg.BaseService
 import io.nekohasekai.sagernet.bg.SagerConnection
 import io.nekohasekai.sagernet.database.DataStore
@@ -57,12 +59,23 @@ class MainActivity : ThemedActivity(),
 
     lateinit var binding: LayoutMainBinding
     lateinit var navigation: NavigationView
+    private var currentDestination = R.id.nav_configuration
+
+    private val statsBar: StatsBar?
+        get() = findViewById(R.id.stats)
+
+    fun toggleConnection() {
+        if (DataStore.serviceState.canStop) {
+            SagerNet.stopService()
+        } else if (DataStore.serviceState == BaseService.State.Stopped) {
+            connect.launch(null)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = LayoutMainBinding.inflate(layoutInflater)
-        binding.fab.initProgress(binding.fabProgress)
         if (themeResId !in intArrayOf(
                 R.style.Theme_SagerNet_Black
             )
@@ -75,23 +88,28 @@ class MainActivity : ThemedActivity(),
         }
         navigation.setNavigationItemSelectedListener(this)
 
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            if (item.itemId != currentDestination) displayFragmentWithId(item.itemId) else true
+        }
+        currentDestination = savedInstanceState?.getInt("destination", R.id.nav_configuration)
+            ?: R.id.nav_configuration
         if (savedInstanceState == null) {
-            displayFragmentWithId(R.id.nav_configuration)
+            displayFragmentWithId(currentDestination)
+        } else {
+            navigation.menu.findItem(currentDestination)?.isChecked = true
+            binding.bottomNavigation.menu.findItem(currentDestination)?.isChecked = true
         }
         onBackPressedDispatcher.addCallback {
+            if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                binding.drawerLayout.closeDrawers()
+                return@addCallback
+            }
             if (supportFragmentManager.findFragmentById(R.id.fragment_holder) is ConfigurationFragment) {
                 moveTaskToBack(true)
             } else {
                 displayFragmentWithId(R.id.nav_configuration)
             }
         }
-
-        binding.fab.setOnClickListener {
-            if (DataStore.serviceState.canStop) SagerNet.stopService() else connect.launch(
-                null
-            )
-        }
-        binding.stats.setOnClickListener { if (DataStore.serviceState.connected) binding.stats.testConnection() }
 
         setContentView(binding.root)
         changeState(BaseService.State.Idle)
@@ -314,14 +332,6 @@ class MainActivity : ThemedActivity(),
 
     @SuppressLint("CommitTransaction")
     fun displayFragment(fragment: ToolbarFragment) {
-        if (fragment is ConfigurationFragment) {
-            binding.stats.allowShow = true
-            binding.fab.show()
-        } else if (!DataStore.showBottomBar) {
-            binding.stats.allowShow = false
-            binding.stats.performHide()
-            binding.fab.hide()
-        }
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_holder, fragment)
             .commitAllowingStateLoss()
@@ -353,33 +363,30 @@ class MainActivity : ThemedActivity(),
 
             else -> return false
         }
-        navigation.menu.findItem(id).isChecked = true
+        currentDestination = id
+        navigation.menu.findItem(id)?.isChecked = true
+        binding.bottomNavigation.menu.findItem(id)?.isChecked = true
         return true
     }
 
     private fun changeState(
         state: BaseService.State,
         msg: String? = null,
-        animate: Boolean = false,
     ) {
         DataStore.serviceState = state
 
-        binding.fab.changeState(state, DataStore.serviceState, animate)
-        binding.stats.changeState(state)
+        statsBar?.changeState(state)
         if (msg != null) snackbar(getString(R.string.vpn_error, msg)).show()
     }
 
     override fun snackbarInternal(text: CharSequence): Snackbar {
         return Snackbar.make(binding.coordinator, text, Snackbar.LENGTH_LONG).apply {
-            if (binding.fab.isShown) {
-                anchorView = binding.fab
-            }
-            // TODO
+            anchorView = binding.bottomNavigation
         }
     }
 
     override fun stateChanged(state: BaseService.State, profileName: String?, msg: String?) {
-        changeState(state, msg, true)
+        changeState(state, msg)
     }
 
     val connection = SagerConnection(SagerConnection.CONNECTION_ID_MAIN_ACTIVITY_FOREGROUND, true)
@@ -404,7 +411,7 @@ class MainActivity : ThemedActivity(),
     // may NOT called when app is in background
     // ONLY do UI update here, write DB in bg process
     override fun cbSpeedUpdate(stats: SpeedDisplayData) {
-        binding.stats.updateSpeed(stats.txRateProxy, stats.rxRateProxy)
+        statsBar?.updateSpeed(stats.txRateProxy, stats.rxRateProxy)
     }
 
     override fun cbTrafficUpdate(data: TrafficData) {
@@ -444,6 +451,11 @@ class MainActivity : ThemedActivity(),
     override fun onStop() {
         connection.updateConnectionId(SagerConnection.CONNECTION_ID_MAIN_ACTIVITY_BACKGROUND)
         super.onStop()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt("destination", currentDestination)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onDestroy() {

@@ -62,7 +62,6 @@ import io.nekohasekai.sagernet.ktx.Logs
 import io.nekohasekai.sagernet.ktx.SubscriptionFoundException
 import io.nekohasekai.sagernet.ktx.alert
 import io.nekohasekai.sagernet.ktx.app
-import io.nekohasekai.sagernet.ktx.dp2px
 import io.nekohasekai.sagernet.ktx.getColorAttr
 import io.nekohasekai.sagernet.ktx.getColour
 import io.nekohasekai.sagernet.ktx.isIpAddress
@@ -183,6 +182,23 @@ class ConfigurationFragment @JvmOverloads constructor(
             toolbar.setNavigationIcon(R.drawable.ic_navigation_close)
             toolbar.setNavigationOnClickListener {
                 requireActivity().finish()
+            }
+        }
+
+        view.findViewById<io.nekohasekai.sagernet.widget.StatsBar>(R.id.stats).apply {
+            isGone = select
+            if (!select) {
+                changeState(DataStore.serviceState)
+                findViewById<androidx.appcompat.widget.SwitchCompat>(R.id.connection_switch)
+                    .setOnClickListener {
+                        (activity as? MainActivity)?.toggleConnection()
+                        changeState(DataStore.serviceState)
+                    }
+                setOnClickListener {
+                    (activity as? MainActivity)?.let { host ->
+                        if (DataStore.serviceState.connected) testConnection(host)
+                    }
+                }
             }
         }
 
@@ -946,7 +962,7 @@ class ConfigurationFragment @JvmOverloads constructor(
                         if (set) groupPager.setCurrentItem(selectedGroupIndex, false)
                         val hideTab = groupList.size < 2
                         tabLayout.isGone = hideTab
-                        toolbar.elevation = if (hideTab) 0F else dp2px(4).toFloat()
+                        toolbar.elevation = 0F
                         if (!select) {
                             groupPager.registerOnPageChangeCallback(updateSelectedCallback)
                         }
@@ -1529,7 +1545,7 @@ class ConfigurationFragment @JvmOverloads constructor(
 
                 profileName.text = proxyEntity.displayName()
                 profileType.text = proxyEntity.displayType()
-                profileType.setTextColor(requireContext().getProtocolColor(proxyEntity.type))
+                profileType.setTextColor(requireContext().getColour(R.color.nb_secondary))
 
                 var rx = proxyEntity.rx
                 var tx = proxyEntity.tx

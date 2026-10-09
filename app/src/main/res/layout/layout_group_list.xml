@@ -12,25 +12,28 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
+    <include layout="@layout/layout_connection_card" />
+
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/group_tab"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?colorPrimary"
-        android:elevation="4dp"
+        android:background="@color/nb_background"
+        android:elevation="0dp"
         android:visibility="gone"
-        app:tabIndicatorColor="?tabIndicatorColor"
+        app:tabIndicatorColor="@color/nb_accent"
         app:tabIndicatorFullWidth="false"
         app:tabMode="scrollable"
         app:tabPaddingStart="16dp"
         app:tabRippleColor="?tabRippleColor"
-        app:tabSelectedTextColor="?tabSelectedTextColor"
-        app:tabTextColor="?tabTextColor"
+        app:tabSelectedTextColor="@color/nb_accent"
+        app:tabTextColor="@color/nb_secondary"
         app:tabUnboundedRipple="false" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/group_pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
 </LinearLayout>
