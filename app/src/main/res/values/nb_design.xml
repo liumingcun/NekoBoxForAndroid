@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <color name="nb_background">#F2F2F7</color>
+    <color name="nb_background">#E8EDF5</color>
     <color name="nb_surface">#FFFFFF</color>
-    <color name="nb_text">#1C1C1E</color>
-    <color name="nb_secondary">#74747D</color>
+    <color name="nb_text">#1D2B3A</color>
+    <color name="nb_secondary">#52647A</color>
     <color name="nb_accent">#007AFF</color>
     <color name="nb_connected">#248A3D</color>
-    <color name="nb_separator">#E5E5EA</color>
+    <color name="nb_separator">#D4DEEC</color>
     <style name="Theme.SagerNet.Cupertino" parent="Theme.SagerNet">
         <item name="colorPrimary">@color/nb_accent</item>
         <item name="colorPrimaryDark">@color/nb_background</item>
@@ -35,4 +35,7 @@
     <string tools:ignore="MissingTranslation" name="nb_test_hint">Tap to test connection</string>
     <string tools:ignore="MissingTranslation" name="nb_upload">Upload</string>
     <string tools:ignore="MissingTranslation" name="nb_download">Download</string>
+    <color name="nb_card_border">#CBD7E6</color>
+    <color name="nb_connection_surface">#DCEAFE</color>
+    <color name="nb_selected_surface">#EAF3FF</color>
 </resources>

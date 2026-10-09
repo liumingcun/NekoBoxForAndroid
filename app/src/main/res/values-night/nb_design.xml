@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="nb_background">#000000</color>
-    <color name="nb_surface">#1C1C1E</color>
-    <color name="nb_text">#F2F2F7</color>
-    <color name="nb_secondary">#AEAEB2</color>
+    <color name="nb_background">#101722</color>
+    <color name="nb_surface">#1F2A38</color>
+    <color name="nb_text">#EDF3FA</color>
+    <color name="nb_secondary">#AFBED0</color>
     <color name="nb_accent">#409CFF</color>
     <color name="nb_connected">#30D158</color>
-    <color name="nb_separator">#38383A</color>
+    <color name="nb_separator">#35455A</color>
     <style name="Theme.SagerNet.Cupertino" parent="Theme.SagerNet">
         <item name="colorPrimary">@color/nb_accent</item>
         <item name="colorPrimaryDark">@color/nb_background</item>
@@ -25,4 +25,7 @@
         <item name="tabIndicatorColor">@color/nb_accent</item>
         <item name="whiteOrTextPrimary">@color/nb_text</item>
     </style>
+    <color name="nb_card_border">#35455A</color>
+    <color name="nb_connection_surface">#20344A</color>
+    <color name="nb_selected_surface">#253E59</color>
 </resources>

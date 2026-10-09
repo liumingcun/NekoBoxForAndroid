@@ -78,3 +78,10 @@
 - Group collapse state survives recreation; list listeners are released when the
   group's view is destroyed.
 - No builds or device validation were run for these changes.
+
+### Individual server cards and notification branding
+
+- Use a cool gray-blue page background, white server cards and a pale blue connection card in light mode; use separate blue-gray page and card colors in dark mode.
+- Replace the enclosing group card with a transparent container. Each server has its own rounded card, border and vertical spacing; selected servers use a blue border and tinted surface. Group collapse and node actions retain their existing behavior.
+- Keep the notification M alpha-mask small icon, add a black-and-white M large icon to service, subscription and test notifications, and replace the Quick Settings tile icon and all legacy density-specific launcher PNGs with M assets. The system controls how notification icons are displayed.
+- Resource XML, PNG sizes and whitespace were checked. No APK build was started for these changes.

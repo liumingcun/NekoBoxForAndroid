@@ -1,6 +1,8 @@
 package io.nekohasekai.sagernet.bg
 
 import android.content.Context
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.CoroutineWorker
@@ -59,6 +61,7 @@ object SubscriptionUpdater {
             .setTicker(applicationContext.getString(R.string.forward_success))
             .setContentTitle(applicationContext.getString(R.string.subscription_update))
             .setSmallIcon(R.drawable.ic_byteflow_notification)
+            .setLargeIcon(AppCompatResources.getDrawable(applicationContext, R.drawable.ic_byteflow_brand)!!.toBitmap(128, 128))
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
 
         override suspend fun doWork(): Result {
