@@ -87,6 +87,9 @@ class MainActivity : ThemedActivity(),
             binding.drawerLayout.removeView(binding.navView)
         }
         navigation.setNavigationItemSelectedListener(this)
+        binding.drawerLayout.setDrawerLockMode(
+            androidx.drawerlayout.widget.DrawerLayout.LOCK_MODE_LOCKED_CLOSED
+        )
 
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             if (item.itemId != currentDestination) displayFragmentWithId(item.itemId) else true
@@ -97,7 +100,7 @@ class MainActivity : ThemedActivity(),
             displayFragmentWithId(currentDestination)
         } else {
             navigation.menu.findItem(currentDestination)?.isChecked = true
-            binding.bottomNavigation.menu.findItem(currentDestination)?.isChecked = true
+            binding.bottomNavigation.menu.findItem(bottomDestination(currentDestination))?.isChecked = true
         }
         onBackPressedDispatcher.addCallback {
             if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -107,7 +110,10 @@ class MainActivity : ThemedActivity(),
             if (supportFragmentManager.findFragmentById(R.id.fragment_holder) is ConfigurationFragment) {
                 moveTaskToBack(true)
             } else {
-                displayFragmentWithId(R.id.nav_configuration)
+                val destination = if (currentDestination in intArrayOf(
+                    R.id.nav_logcat, R.id.nav_tools, R.id.nav_traffic, R.id.nav_about
+                )) R.id.nav_settings else R.id.nav_configuration
+                displayFragmentWithId(destination)
             }
         }
 
@@ -147,7 +153,6 @@ class MainActivity : ThemedActivity(),
     fun refreshNavMenu(clashApi: Boolean) {
         if (::navigation.isInitialized) {
             navigation.menu.findItem(R.id.nav_traffic)?.isVisible = clashApi
-            navigation.menu.findItem(R.id.nav_tuiguang)?.isVisible = !isPlay
         }
     }
 
@@ -338,6 +343,11 @@ class MainActivity : ThemedActivity(),
         binding.drawerLayout.closeDrawers()
     }
 
+    private fun bottomDestination(@IdRes id: Int): Int = when (id) {
+        R.id.nav_logcat, R.id.nav_tools, R.id.nav_traffic, R.id.nav_about -> R.id.nav_settings
+        else -> id
+    }
+
     fun displayFragmentWithId(@IdRes id: Int): Boolean {
         when (id) {
             R.id.nav_configuration -> {
@@ -350,22 +360,12 @@ class MainActivity : ThemedActivity(),
             R.id.nav_traffic -> displayFragment(WebviewFragment())
             R.id.nav_tools -> displayFragment(ToolsFragment())
             R.id.nav_logcat -> displayFragment(LogcatFragment())
-            R.id.nav_faq -> {
-                launchCustomTab("https://matsuridayo.github.io/")
-                return false
-            }
-
             R.id.nav_about -> displayFragment(AboutFragment())
-            R.id.nav_tuiguang -> {
-                launchCustomTab("https://neko-box.pages.dev/喵")
-                return false
-            }
-
             else -> return false
         }
         currentDestination = id
         navigation.menu.findItem(id)?.isChecked = true
-        binding.bottomNavigation.menu.findItem(id)?.isChecked = true
+        binding.bottomNavigation.menu.findItem(bottomDestination(id))?.isChecked = true
         return true
     }
 
@@ -432,6 +432,7 @@ class MainActivity : ThemedActivity(),
 
     override fun onPreferenceDataStoreChanged(store: PreferenceDataStore, key: String) {
         when (key) {
+            Key.PROFILE_ID, Key.PROFILE_CURRENT -> statsBar?.post { statsBar?.refreshProfile() }
             Key.SERVICE_MODE -> onBinderDied()
             Key.PROXY_APPS, Key.BYPASS_MODE, Key.INDIVIDUAL -> {
                 if (DataStore.serviceState.canStop) {

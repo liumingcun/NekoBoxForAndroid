@@ -1,0 +1,6 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/nb_test_current" android:title="@string/nb_test_current" />
+    <item android:id="@id/action_connection_tcp_ping" android:title="@string/nb_test_group_tcp" />
+    <item android:id="@id/action_connection_url_test" android:title="@string/nb_test_group_url" />
+    <item android:id="@id/action_order_by_delay" android:title="@string/nb_test_sort" />
+</menu>

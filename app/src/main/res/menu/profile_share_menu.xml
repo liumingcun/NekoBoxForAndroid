@@ -37,4 +37,5 @@
                 android:title="@string/action_export_file" />
         </menu>
     </item>
+    <item android:id="@+id/nb_profile_delete" android:title="@string/delete" />
 </menu>

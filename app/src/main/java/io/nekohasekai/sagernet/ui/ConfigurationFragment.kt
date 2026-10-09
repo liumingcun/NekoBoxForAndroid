@@ -15,12 +15,12 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.PopupMenu
-import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.net.toUri
 import androidx.core.view.isGone
@@ -119,7 +119,6 @@ class ConfigurationFragment @JvmOverloads constructor(
 ) : ToolbarFragment(R.layout.layout_group_list),
     PopupMenu.OnMenuItemClickListener,
     Toolbar.OnMenuItemClickListener,
-    SearchView.OnQueryTextListener,
     OnPreferenceDataStoreChangeListener {
 
     interface SelectCallback {
@@ -151,12 +150,11 @@ class ConfigurationFragment @JvmOverloads constructor(
         }
     }
 
-    override fun onQueryTextChange(query: String): Boolean {
+    fun onQueryTextChange(query: String): Boolean {
         getCurrentGroupFragment()?.adapter?.filter(query)
         return false
     }
 
-    override fun onQueryTextSubmit(query: String): Boolean = false
 
     @SuppressLint("DetachAndAttachSameFragment")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -194,22 +192,13 @@ class ConfigurationFragment @JvmOverloads constructor(
                         (activity as? MainActivity)?.toggleConnection()
                         changeState(DataStore.serviceState)
                     }
-                setOnClickListener {
-                    (activity as? MainActivity)?.let { host ->
-                        if (DataStore.serviceState.connected) testConnection(host)
+                findViewById<View>(R.id.connection_test_button).setOnClickListener { anchor ->
+                    PopupMenu(requireContext(), anchor).apply {
+                        menuInflater.inflate(R.menu.byteflow_test_menu, menu)
+                        menu.findItem(R.id.nb_test_current).isEnabled = DataStore.serviceState.connected
+                        setOnMenuItemClickListener(this@ConfigurationFragment)
+                        show()
                     }
-                }
-            }
-        }
-
-        val searchView = toolbar.findViewById<SearchView>(R.id.action_search)
-        if (searchView != null) {
-            searchView.setOnQueryTextListener(this)
-            searchView.maxWidth = Int.MAX_VALUE
-
-            searchView.setOnQueryTextFocusChangeListener { _, hasFocus ->
-                if (!hasFocus) {
-                    cancelSearch(searchView)
                 }
             }
         }
@@ -361,6 +350,49 @@ class ConfigurationFragment @JvmOverloads constructor(
 
     override fun onMenuItemClick(item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.action_search -> {
+                val input = EditText(requireContext()).apply {
+                    setSingleLine(true)
+                    hint = getString(R.string.nb_search_group)
+                }
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.nb_search_group)
+                    .setView(input)
+                    .setPositiveButton(android.R.string.ok) { _, _ ->
+                        getCurrentGroupFragment()?.expandGroup()
+                        onQueryTextChange(input.text.toString())
+                    }
+                    .setNeutralButton(R.string.nb_clear_search) { _, _ ->
+                        getCurrentGroupFragment()?.expandGroup()
+                        onQueryTextChange("")
+                    }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show()
+            }
+
+            R.id.nb_add_subscription -> {
+                startActivity(Intent(requireContext(), GroupSettingsActivity::class.java).apply {
+                    putExtra(GroupSettingsActivity.EXTRA_SUBSCRIPTION, true)
+                })
+            }
+
+            R.id.nb_test_current -> {
+                val host = activity as? MainActivity
+                if (host != null && DataStore.serviceState.connected) {
+                    view?.findViewById<io.nekohasekai.sagernet.widget.StatsBar>(R.id.stats)?.testConnection(host)
+                } else snackbar(R.string.nb_connect_before_test).show()
+            }
+
+            R.id.action_order_by_delay -> {
+                getCurrentGroupFragment()?.let { groupFragment ->
+                    runOnLifecycleDispatcher {
+                        groupFragment.proxyGroup.order = GroupOrder.BY_DELAY
+                        GroupManager.updateGroup(groupFragment.proxyGroup)
+                        onMainDispatcher { groupFragment.checkOrderMenu() }
+                    }
+                }
+            }
+
             R.id.action_scan_qr_code -> {
                 startActivity(Intent(context, ScannerActivity::class.java))
             }
@@ -1054,13 +1086,48 @@ class ConfigurationFragment @JvmOverloads constructor(
 
         lateinit var proxyGroup: ProxyGroup
         var selected = false
+        private var collapsed = false
+        private val headerObserver = object : RecyclerView.AdapterDataObserver() {
+            override fun onChanged() = refreshGroupHeader()
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) = refreshGroupHeader()
+            override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) = refreshGroupHeader()
+        }
+
+        fun expandGroup() {
+            collapsed = false
+            refreshGroupHeader()
+        }
+
+        private fun refreshGroupHeader() {
+            if (!::proxyGroup.isInitialized) return
+            val root = view ?: return
+            val count = adapter?.itemCount ?: 0
+            val name = proxyGroup.displayName()
+            root.findViewById<TextView>(R.id.group_heading_title).text = name
+            val summary = mutableListOf(getString(R.string.nb_node_count, count))
+            if (proxyGroup.type == GroupType.SUBSCRIPTION) {
+                val updated = proxyGroup.subscription?.lastUpdated ?: 0
+                summary += if (updated > 0) {
+                    getString(R.string.nb_updated_at, android.text.format.DateUtils.formatDateTime(
+                        requireContext(), updated.toLong() * 1000,
+                        android.text.format.DateUtils.FORMAT_SHOW_DATE or android.text.format.DateUtils.FORMAT_SHOW_TIME
+                    ))
+                } else getString(R.string.nb_not_updated)
+            }
+            root.findViewById<TextView>(R.id.group_heading_summary).text = summary.joinToString(" · ")
+            root.findViewById<View>(R.id.group_list_surface).isGone = collapsed
+            root.findViewById<ImageView>(R.id.group_heading_arrow).rotation = if (collapsed) -90f else 0f
+            root.findViewById<View>(R.id.group_heading).contentDescription =
+                "$name, ${summary.joinToString(", ")}, ${getString(if (collapsed) R.string.nb_group_collapsed else R.string.nb_group_expanded)}"
+        }
 
         override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
             savedInstanceState: Bundle?,
         ): View {
-            return LayoutProfileListBinding.inflate(inflater).root
+            collapsed = savedInstanceState?.getBoolean("groupCollapsed") ?: false
+            return LayoutProfileListBinding.inflate(inflater, container, false).root
         }
 
         lateinit var undoManager: UndoSnackbarManager<ProxyEntity>
@@ -1071,6 +1138,7 @@ class ConfigurationFragment @JvmOverloads constructor(
 
             if (::proxyGroup.isInitialized) {
                 outState.putParcelable("proxyGroup", proxyGroup)
+                outState.putBoolean("groupCollapsed", collapsed)
             }
         }
 
@@ -1173,6 +1241,15 @@ class ConfigurationFragment @JvmOverloads constructor(
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
             if (!::proxyGroup.isInitialized) return
 
+            if (::configurationListView.isInitialized &&
+                configurationListView === view.findViewById<RecyclerView>(R.id.configuration_list) && adapter != null) {
+                refreshGroupHeader()
+                return
+            }
+            view.findViewById<View>(R.id.group_heading).setOnClickListener {
+                collapsed = !collapsed
+                refreshGroupHeader()
+            }
             configurationListView = view.findViewById(R.id.configuration_list)
             layoutManager = FixedLinearLayoutManager(configurationListView)
             configurationListView.layoutManager = layoutManager
@@ -1180,6 +1257,8 @@ class ConfigurationFragment @JvmOverloads constructor(
             ProfileManager.addListener(adapter!!)
             GroupManager.addListener(adapter!!)
             configurationListView.adapter = adapter
+            adapter!!.registerAdapterDataObserver(headerObserver)
+            refreshGroupHeader()
             configurationListView.setItemViewCacheSize(20)
 
             if (!select) {
@@ -1225,6 +1304,17 @@ class ConfigurationFragment @JvmOverloads constructor(
 
             }
 
+        }
+
+        override fun onDestroyView() {
+            adapter?.let {
+                it.unregisterAdapterDataObserver(headerObserver)
+                ProfileManager.removeListener(it)
+                GroupManager.removeListener(it)
+            }
+            if (::undoManager.isInitialized) undoManager.flush()
+            adapter = null
+            super.onDestroyView()
         }
 
         override fun onDestroy() {
@@ -1495,7 +1585,7 @@ class ConfigurationFragment @JvmOverloads constructor(
             val profileStatus: TextView = view.findViewById(R.id.profile_status)
 
             val trafficText: TextView = view.findViewById(R.id.traffic_text)
-            val selectedView: LinearLayout = view.findViewById(R.id.selected_view)
+            val selectedView: ImageView = view.findViewById(R.id.selected_view)
             val editButton: ImageView = view.findViewById(R.id.edit)
             val shareLayout: LinearLayout = view.findViewById(R.id.share)
             val shareLayer: LinearLayout = view.findViewById(R.id.share_layer)
@@ -1587,7 +1677,7 @@ class ConfigurationFragment @JvmOverloads constructor(
                         profileStatus.text = ""
                     }
                 } else if (proxyEntity.status == 1) {
-                    profileStatus.text = getString(R.string.available, proxyEntity.ping)
+                    profileStatus.text = getString(R.string.nb_latency, proxyEntity.ping)
                     profileStatus.setTextColor(requireContext().getColour(R.color.material_green_500))
                 } else {
                     profileStatus.setTextColor(requireContext().getColour(R.color.material_red_500))
@@ -1596,7 +1686,7 @@ class ConfigurationFragment @JvmOverloads constructor(
                     }
                 }
 
-                if (proxyEntity.status == 3) {
+                if (proxyEntity.status == 2 || proxyEntity.status == 3) {
                     val err = proxyEntity.error ?: "<?>"
                     val msg = Protocols.genFriendlyMsg(err)
                     profileStatus.text = if (msg != err) msg else getString(R.string.unavailable)
@@ -1623,23 +1713,25 @@ class ConfigurationFragment @JvmOverloads constructor(
                     }
                 }
 
-                val selectOrChain = select || proxyEntity.type == ProxyEntity.TYPE_CHAIN
-                shareLayout.isGone = selectOrChain
+                shareLayout.isGone = select
                 editButton.isGone = select
-                removeButton.isGone = select
-
-                proxyEntity.nekoBean?.apply {
-                    shareLayout.isGone = true
-                }
+                removeButton.isGone = true
 
                 runOnDefaultDispatcher {
                     val selected = (selectedItem?.id ?: DataStore.selectedProxy) == proxyEntity.id
                     val started =
                         selected && DataStore.serviceState.started && DataStore.currentProfile == proxyEntity.id
                     onMainDispatcher {
+                        if (entity.id != proxyEntity.id) return@onMainDispatcher
                         editButton.isEnabled = !started
                         removeButton.isEnabled = !started
                         selectedView.visibility = if (selected) View.VISIBLE else View.INVISIBLE
+                        view.isSelected = selected
+                        if (selected && !select) {
+                            (activity as? MainActivity)
+                                ?.findViewById<io.nekohasekai.sagernet.widget.StatsBar>(R.id.stats)
+                                ?.updateProfile(proxyEntity.id, proxyEntity.displayName())
+                        }
                     }
 
                     fun showShare(anchor: View) {
@@ -1664,14 +1756,21 @@ class ConfigurationFragment @JvmOverloads constructor(
                             popup.menu.removeItem(R.id.action_group_configuration)
                         }
 
+                        if (proxyEntity.type == ProxyEntity.TYPE_CHAIN || proxyEntity.nekoBean != null) {
+                            popup.menu.removeItem(R.id.action_group_qr)
+                            popup.menu.removeItem(R.id.action_group_clipboard)
+                            popup.menu.removeItem(R.id.action_group_configuration)
+                        }
+                        popup.menu.findItem(R.id.nb_profile_delete).isEnabled = removeButton.isEnabled
                         popup.setOnMenuItemClickListener(this@ConfigurationHolder)
                         popup.show()
                     }
 
-                    if (!(select || proxyEntity.type == ProxyEntity.TYPE_CHAIN)) {
+                    if (!select) {
                         onMainDispatcher {
+                            if (entity.id != proxyEntity.id) return@onMainDispatcher
                             shareLayer.setBackgroundColor(Color.TRANSPARENT)
-                            shareButton.setImageResource(R.drawable.ic_social_share)
+                            shareButton.setImageResource(R.drawable.ic_baseline_more_vert_24)
                             shareButton.setColorFilter(Color.GRAY)
                             shareButton.isVisible = true
 
@@ -1699,6 +1798,7 @@ class ConfigurationFragment @JvmOverloads constructor(
                 try {
                     currentName = entity.displayName()!!
                     when (item.itemId) {
+                        R.id.nb_profile_delete -> if (removeButton.isEnabled) removeButton.performClick()
                         R.id.action_standard_qr -> showCode(entity.toStdLink())
                         R.id.action_standard_clipboard -> export(entity.toStdLink())
                         R.id.action_universal_qr -> showCode(entity.requireBean().toUniversalLink())
@@ -1750,9 +1850,5 @@ class ConfigurationFragment @JvmOverloads constructor(
             }
         }
 
-    private fun cancelSearch(searchView: SearchView) {
-        searchView.onActionViewCollapsed()
-        searchView.clearFocus()
-    }
 
 }

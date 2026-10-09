@@ -41,6 +41,20 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         DataStore.initGlobal()
         addPreferencesFromResource(R.xml.global_preferences)
 
+        val destinations = mapOf(
+            "nbManageSubscriptions" to R.id.nav_group,
+            "nbLogs" to R.id.nav_logcat,
+            "nbTools" to R.id.nav_tools,
+            "nbDashboard" to R.id.nav_traffic,
+            "nbAbout" to R.id.nav_about,
+        )
+        destinations.forEach { (key, destination) ->
+            findPreference<Preference>(key)!!.setOnPreferenceClickListener {
+                (activity as? MainActivity)?.displayFragmentWithId(destination) ?: false
+            }
+        }
+        findPreference<Preference>("nbDashboard")!!.isVisible = DataStore.enableClashAPI
+
         val appTheme = findPreference<ColorPickerPreference>(Key.APP_THEME)!!
         appTheme.setOnPreferenceChangeListener { _, newTheme ->
             if (DataStore.serviceState.started) {
@@ -143,7 +157,8 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         val acquireWakeLock = findPreference<SwitchPreference>(Key.ACQUIRE_WAKE_LOCK)!!
         val enableClashAPI = findPreference<SwitchPreference>(Key.ENABLE_CLASH_API)!!
         enableClashAPI.setOnPreferenceChangeListener { _, newValue ->
-            (activity as MainActivity?)?.refreshNavMenu(newValue as Boolean)
+            findPreference<Preference>("nbDashboard")!!.isVisible = newValue as Boolean
+            (activity as MainActivity?)?.refreshNavMenu(newValue)
             needReload()
             true
         }

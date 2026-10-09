@@ -194,6 +194,7 @@ class GroupSettingsActivity(
 
     companion object {
         const val EXTRA_GROUP_ID = "id"
+        const val EXTRA_SUBSCRIPTION = "newSubscription"
     }
 
     @SuppressLint("CommitTransaction")
@@ -211,7 +212,9 @@ class GroupSettingsActivity(
             DataStore.editingId = editingId
             runOnDefaultDispatcher {
                 if (editingId == 0L) {
-                    ProxyGroup().init()
+                    ProxyGroup(type = if (intent.getBooleanExtra(EXTRA_SUBSCRIPTION, false)) {
+                        GroupType.SUBSCRIPTION
+                    } else GroupType.BASIC).init()
                 } else {
                     val entity = SagerDatabase.groupDao.getById(editingId)
                     if (entity == null) {

@@ -5,12 +5,12 @@
     android:id="@+id/content"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="2dp"
-    android:layout_marginBottom="2dp"
+    android:layout_marginTop="0dp"
+    android:layout_marginBottom="0dp"
     android:clickable="true"
     android:focusable="true"
     app:cardElevation="0dp"
-    app:cardCornerRadius="12dp"
+    app:cardCornerRadius="0dp"
     app:cardBackgroundColor="@color/nb_surface"
     app:strokeWidth="0dp">
 
@@ -21,13 +21,16 @@
         android:focusable="true"
         android:orientation="horizontal">
 
-        <LinearLayout
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/selected_view"
-            android:layout_width="4dp"
-            android:layout_height="match_parent"
-            android:background="@color/nb_accent"
-            android:orientation="horizontal"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp"
+            android:contentDescription="@string/nb_selected_node"
             android:visibility="invisible"
+            app:srcCompat="@drawable/ic_byteflow_check"
+            app:tint="@color/nb_accent"
             tools:visibility="visible" />
 
         <LinearLayout
@@ -61,6 +64,7 @@
                         android:textAppearance="?android:attr/textAppearanceSmall"
                         android:textColor="@color/nb_text"
                         android:textSize="16sp"
+                        android:textStyle="bold"
                         android:maxLines="2"
                         android:ellipsize="end"
                         tools:text="@string/profile_name" />
@@ -68,7 +72,7 @@
 
                 <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/edit"
-                    android:layout_width="wrap_content"
+                    android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:layout_gravity="center_vertical"
                     android:background="?attr/selectableItemBackgroundBorderless"
@@ -80,11 +84,11 @@
 
                 <LinearLayout
                     android:id="@+id/share"
-                    android:layout_width="wrap_content"
+                    android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:layout_gravity="center_vertical"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/share"
+                    android:contentDescription="@string/nb_more_actions"
                     android:focusable="true"
                     android:nextFocusLeft="@+id/container">
 
@@ -99,14 +103,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             app:tint="@color/nb_secondary"
-                            app:srcCompat="@drawable/ic_social_share" />
+                            app:srcCompat="@drawable/ic_baseline_more_vert_24" />
                     </LinearLayout>
 
                 </LinearLayout>
 
                 <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/remove"
-                    android:layout_width="wrap_content"
+                    android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:layout_gravity="center_vertical"
                     android:background="?attr/selectableItemBackgroundBorderless"
@@ -130,16 +134,14 @@
 
                 <TextView
                     android:id="@+id/profile_address"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     android:layout_height="wrap_content"
                     android:text="@string/server_address"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textColor="@color/nb_secondary" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
 
                 <TextView
                     android:id="@+id/traffic_text"
@@ -161,19 +163,23 @@
 
                 <TextView
                     android:id="@+id/profile_type"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textColor="@color/nb_secondary" />
 
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
-
                 <TextView
                     android:id="@+id/profile_status"
                     android:layout_width="wrap_content"
+                    android:minWidth="56dp"
+                    android:maxWidth="128dp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:gravity="end"
+                    android:fontFamily="sans-serif-medium"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
                     android:textAppearance="?android:attr/textAppearanceSmall"
@@ -185,4 +191,5 @@
 
     </LinearLayout>
 
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_gravity="bottom" android:layout_marginStart="48dp" android:layout_marginEnd="12dp" android:background="@color/nb_separator" />
 </com.google.android.material.card.MaterialCardView>

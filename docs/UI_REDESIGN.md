@@ -46,3 +46,35 @@
 ## 许可证
 
 沿用上游 GPL-3.0 许可证；再分发时保留上游许可与声明并提供相应源码。此项目与 Shadowrocket 开发者无关联，未使用其图标或商标资产。
+
+
+## ByteFlow usability update (source only)
+
+- Home: persistent connection state, selected server name, separate test feedback,
+  and secondary upload/download rates. Server names refresh after selection and edits.
+- Servers: checkmark selection, bold names with two-line truncation, aligned short
+  latency labels, clipped secondary text, and 48dp info/more buttons. Sharing and
+  deletion live in the more menu; active-server deletion remains disabled.
+- Navigation: four bottom destinations; logs, tools, dashboard and About are opened
+  from Settings. Secondary pages return to Settings and keep its tab highlighted.
+- Settings: connection, routing, subscription management, appearance, collapsed
+  advanced options, and tools/information. Existing keys and defaults are preserved.
+- Validation: XML parsing, preference attribute/key preservation, local resource
+  reference checks and whitespace checks. No APK compilation, cloud build, or device
+  validation performed for this update, per user instruction.
+
+
+## Shadowrocket-inspired refinement (source only)
+
+- Condensed home controls: switch/status, one-line current server, combined rates,
+  and an explicit test menu. The menu separates active-connection URL testing,
+  whole-group TCP latency, whole-group URL testing, and latency sorting.
+- Retains tab/swipe group navigation; each group's servers now share a white list
+  surface with thin dividers and a collapsible group heading. Heading displays
+  visible server count and actual subscription update time when available.
+- Toolbar has one + entry for QR, clipboard, subscription, file and manual adds.
+  Search and existing group utilities remain accessible inside its menu.
+- Add subscription opens group creation with subscription type preselected.
+- Group collapse state survives recreation; list listeners are released when the
+  group's view is destroyed.
+- No builds or device validation were run for these changes.
